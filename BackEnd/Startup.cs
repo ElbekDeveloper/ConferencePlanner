@@ -3,7 +3,8 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using BackEnd.Models;
+using Backend.Data;
+using BackEnd.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +38,7 @@ namespace BackEnd
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo {Title = "Conference Planner API", Version = "v1"});
+                options.DescribeAllEnumsAsStrings();
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -57,7 +59,7 @@ namespace BackEnd
             app.UseRouting();
 
             app.UseAuthorization();
-
+            
             app.UseSwagger();
 
             app.UseSwaggerUI(options =>
