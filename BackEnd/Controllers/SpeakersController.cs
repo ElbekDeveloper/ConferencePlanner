@@ -39,7 +39,7 @@ namespace BackEnd.Controllers
         {
             var speaker = await _context.Speakers.AsNoTracking()
                 .Include(s => s.SessionSpeakers)
-                .ThenInclude(ss => ss.Session)
+                .ThenInclude(ss => ss.Session) 
                 .SingleOrDefaultAsync(s => s.Id == id);
             if (speaker == null)
             {
