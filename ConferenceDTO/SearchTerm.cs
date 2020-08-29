@@ -1,7 +1,10 @@
 ﻿namespace ConferenceDTO
 {
-    public class SearchTerm
-    {
-        public string Query { get; set; }
+public class SearchTerm
+{
+    public string Query {
+        get;
+        set;
     }
+}
 }
