@@ -4,127 +4,106 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ConferenceDTO;
 
-namespace FrontEnd.Services
-{
-public class ApiClient : IApiClient
-{
+namespace FrontEnd.Services {
+  public class ApiClient : IApiClient {
     private readonly HttpClient _httpClient;
 
-    public ApiClient(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
+    public ApiClient(HttpClient httpClient) { _httpClient = httpClient; }
+
+    public async Task<bool> AddAttendeeAsync(Attendee attendee) {
+      var response =
+          await _httpClient.PostAsJsonAsync($"/api/attendees", attendee);
+
+      if (response.StatusCode == HttpStatusCode.Conflict) {
+        return false;
+      }
+
+      response.EnsureSuccessStatusCode();
+
+      return true;
     }
 
-    public async Task<bool> AddAttendeeAsync(Attendee attendee)
-    {
-        var response = await _httpClient.PostAsJsonAsync($"/api/attendees", attendee);
+    public async Task<AttendeeResponse> GetAttendeeAsync(string name) {
+      if (string.IsNullOrEmpty(name)) {
+        return null;
+      }
 
-        if (response.StatusCode == HttpStatusCode.Conflict)
-        {
-            return false;
-        }
+      var response = await _httpClient.GetAsync($"/api/attendees/{name}");
 
-        response.EnsureSuccessStatusCode();
+      if (response.StatusCode == HttpStatusCode.NotFound) {
+        return null;
+      }
 
-        return true;
+      response.EnsureSuccessStatusCode();
+
+      return await response.Content.ReadAsAsync<AttendeeResponse>();
     }
 
-    public async Task<AttendeeResponse> GetAttendeeAsync(string name)
-    {
-        if (string.IsNullOrEmpty(name))
-        {
-            return null;
-        }
+    public async Task<SessionResponse> GetSessionAsync(int id) {
+      var response = await _httpClient.GetAsync($"/api/sessions/{id}");
 
-        var response = await _httpClient.GetAsync($"/api/attendees/{name}");
+      if (response.StatusCode == HttpStatusCode.NotFound) {
+        return null;
+      }
 
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
+      response.EnsureSuccessStatusCode();
 
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadAsAsync<AttendeeResponse>();
+      return await response.Content.ReadAsAsync<SessionResponse>();
     }
 
-    public async Task<SessionResponse> GetSessionAsync(int id)
-    {
-        var response = await _httpClient.GetAsync($"/api/sessions/{id}");
+    public async Task<List<SessionResponse>> GetSessionsAsync() {
+      var response = await _httpClient.GetAsync("/api/sessions");
 
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
+      response.EnsureSuccessStatusCode();
 
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadAsAsync<SessionResponse>();
+      return await response.Content.ReadAsAsync<List<SessionResponse>>();
     }
 
-    public async Task<List<SessionResponse>> GetSessionsAsync()
-    {
-        var response = await _httpClient.GetAsync("/api/sessions");
+    public async Task DeleteSessionAsync(int id) {
+      var response = await _httpClient.DeleteAsync($"/api/sessions/{id}");
 
-        response.EnsureSuccessStatusCode();
+      if (response.StatusCode == HttpStatusCode.NotFound) {
+        return;
+      }
 
-        return await response.Content.ReadAsAsync<List<SessionResponse>>();
+      response.EnsureSuccessStatusCode();
     }
 
-    public async Task DeleteSessionAsync(int id)
-    {
-        var response = await _httpClient.DeleteAsync($"/api/sessions/{id}");
+    public async Task<SpeakerResponse> GetSpeakerAsync(int id) {
+      var response = await _httpClient.GetAsync($"/api/speakers/{id}");
 
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return;
-        }
+      if (response.StatusCode == HttpStatusCode.NotFound) {
+        return null;
+      }
 
-        response.EnsureSuccessStatusCode();
+      response.EnsureSuccessStatusCode();
+
+      return await response.Content.ReadAsAsync<SpeakerResponse>();
     }
 
-    public async Task<SpeakerResponse> GetSpeakerAsync(int id)
-    {
-        var response = await _httpClient.GetAsync($"/api/speakers/{id}");
+    public async Task<List<SpeakerResponse>> GetSpeakersAsync() {
+      var response = await _httpClient.GetAsync("/api/speakers");
 
-        if (response.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
+      response.EnsureSuccessStatusCode();
 
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadAsAsync<SpeakerResponse>();
+      return await response.Content.ReadAsAsync<List<SpeakerResponse>>();
     }
 
-    public async Task<List<SpeakerResponse>> GetSpeakersAsync()
-    {
-        var response = await _httpClient.GetAsync("/api/speakers");
+    public async Task PutSessionAsync(Session session) {
+      var response = await _httpClient.PutAsJsonAsync(
+          $"/api/sessions/{session.Id}", session);
 
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadAsAsync<List<SpeakerResponse>>();
+      response.EnsureSuccessStatusCode();
     }
 
-    public async Task PutSessionAsync(Session session)
-    {
-        var response = await _httpClient.PutAsJsonAsync($"/api/sessions/{session.Id}", session);
+    public async Task<List<SearchResult>> SearchAsync(string query) {
+      var term = new SearchTerm{Query = query};
 
-        response.EnsureSuccessStatusCode();
+      var response = await _httpClient.PostAsJsonAsync($"/api/search", term);
+
+      response.EnsureSuccessStatusCode();
+
+      return await response.Content.ReadAsAsync<List<SearchResult>>();
     }
-
-    public async Task<List<SearchResult>> SearchAsync(string query)
-    {
-        var term = new SearchTerm
-        {
-            Query = query
-        };
-
-        var response = await _httpClient.PostAsJsonAsync($"/api/search", term);
-
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadAsAsync<List<SearchResult>>();
-    }
-}
+  }
 }

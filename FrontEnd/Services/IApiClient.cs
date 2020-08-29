@@ -2,10 +2,8 @@
 using System.Threading.Tasks;
 using ConferenceDTO;
 
-namespace FrontEnd.Services
-{
-public  interface IApiClient
-{
+namespace FrontEnd.Services {
+  public interface IApiClient {
     Task<List<SessionResponse>> GetSessionsAsync();
     Task<SessionResponse> GetSessionAsync(int id);
     Task<List<SpeakerResponse>> GetSpeakersAsync();
@@ -15,5 +13,5 @@ public  interface IApiClient
     Task<AttendeeResponse> GetAttendeeAsync(string name);
     Task DeleteSessionAsync(int id);
     Task<List<SearchResult>> SearchAsync(string query);
-}
+  }
 }

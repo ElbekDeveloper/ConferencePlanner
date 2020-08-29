@@ -7,32 +7,26 @@ using Microsoft.EntityFrameworkCore;
 using BackEnd.Data;
 using ConferenceDTO;
 
-namespace BackEnd.Controllers
-{
-[Route("api/[controller]")]
-[ApiController]
-public class SearchController : ControllerBase
-{
+namespace BackEnd.Controllers {
+  [Route("api/[controller]")]
+  [ApiController]
+  public class SearchController : ControllerBase {
     private readonly ApplicationDbContext _db;
 
-    public SearchController(ApplicationDbContext db)
-    {
-        _db = db;
-    }
+    public SearchController(ApplicationDbContext db) { _db = db; }
 
     [HttpPost]
-    public async Task<ActionResult<List<SearchResult>>> Search(SearchTerm term)
-    {
-        var query = term.Query.ToLowerInvariant();
-        var sessionResults =(await _db.Sessions.Include(s => s.Track)
-                             .Include(s => s.SessionSpeakers)
-                             .ThenInclude(ss => ss.Speaker)
-                             .ToListAsync())
-                            .Where(s =>
-                                   s.Title.ToLowerInvariant().Contains(query) ||
-                                   s.Track.Name.ToLowerInvariant().Contains(query)
-                                  )
-                            .ToList();
+    public async Task<ActionResult<List<SearchResult>>>
+    Search(SearchTerm term) {
+      var query = term.Query.ToLowerInvariant();
+      var sessionResults =
+          (await _db.Sessions.Include(s => s.Track)
+               .Include(s => s.SessionSpeakers)
+               .ThenInclude(ss => ss.Speaker)
+               .ToListAsync())
+              .Where(s => s.Title.ToLowerInvariant().Contains(query) ||
+                          s.Track.Name.ToLowerInvariant().Contains(query))
+              .ToList();
 
         var speakerResults = (await _db.Speakers.Include(s => s.SessionSpeakers)
                               .ThenInclude(ss => ss.Session)
@@ -44,18 +38,17 @@ public class SearchController : ControllerBase
                                    )
                              .ToList();
 
-        var results = sessionResults.Select(session => new SearchResult
-        {
-            Type = SearchResult.SearchResultType.Session,
-            Session = session.MapSessionResponse()
-        })
-        .Concat(speakerResults.Select(speaker => new SearchResult
-        {
-            Type = SearchResult.SearchResultType.Speaker,
-            Speaker = speaker.MapSpeakerResponse()
-        }));
+        var results =
+            sessionResults
+                .Select(session => new SearchResult{
+                            Type = SearchResult.SearchResultType.Session,
+                            Session = session.MapSessionResponse()})
+                .Concat(speakerResults.Select(
+                    speaker => new SearchResult{
+                        Type = SearchResult.SearchResultType.Speaker,
+                        Speaker = speaker.MapSpeakerResponse()}));
 
         return results.ToList();
     }
-}
+  }
 }
